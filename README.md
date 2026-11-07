@@ -40,7 +40,6 @@ ML_PROJ/
 The experiments use the **CIFAKE – Real and AI-Generated Synthetic Images** dataset.
 
 - Original dataset: https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images
-- Processed dataset backup: https://www.kaggle.com/datasets/diyavinodthomas/cifake-processed-backup
 
 The original dataset is expected to have this directory layout:
 
