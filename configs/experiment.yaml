@@ -1,0 +1,57 @@
+# Single source of truth for every number quoted in the Methodology section.
+
+data:
+  root: data/cifake                         # must contain train/{REAL,FAKE} and test/{REAL,FAKE}
+  processed: data/processed/cifake_clean.npz
+  audit: data/processed/audit.json
+  val_fraction: 0.10                        # stratified hold-out taken from the official training split
+  split_seed: 0                             # fixed: seeds below vary only model initialisation / batch order
+
+representation:
+  log_eps: 1.0e-4                           # epsilon in log(|c| + eps)
+  block_size: 8                             # JPEG-aligned block DCT ablation
+
+model:
+  width: 32                                 # single-domain CNN: 32-64-128 channels (~0.29 M parameters)
+  hybrid_width: 23                          # each hybrid branch: 23-46-92 channels (~0.30 M parameters total)
+  dropout: 0.3
+
+train:
+  epochs: 30
+  batch_size: 256
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  warmup_epochs: 2
+  patience: 5                               # early stopping on validation loss
+  num_workers: 4
+  amp: true
+  hflip: true
+
+augment:                                    # regime R2 (perturbation-aware training) only
+  prob: 0.5
+  jpeg_quality: [10, 100]
+  resize_scale: [0.25, 1.0]
+  blur_sigma: [0.0, 2.0]
+  reencode_cycles: [2, 20]
+
+evaluation:
+  seeds: [0, 1, 2, 3, 4]
+  perturb_seed: 1234                        # seeds the random qualities of the re-encoding chain
+  cache_dir: data/perturbed
+  bootstrap: 1000
+  alpha: 0.05
+
+tuning:
+  trials: 30
+  epochs: 15
+  search_space:
+    lr: [1.0e-4, 3.0e-3]                    # log-uniform
+    weight_decay: [1.0e-5, 1.0e-3]          # log-uniform
+    dropout: [0.0, 0.2, 0.3, 0.5]
+    batch_size: [128, 256]
+
+analysis:
+  spectral_subsample: 20000                 # images per split used for the spectral statistics
+  mi_subsample: 10000
+  mi_topk: [256, 768, 1536]                 # top-k DCT coefficients kept in the feature-selection ablation
+  interpret_images: 1000
